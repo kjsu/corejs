@@ -1,7 +1,7 @@
 /*
     closure
-    내부 함수가 외부 함수의 변수를 참조할 때
-    외부 함수의 LE가 GC되지 않는 현상
+    함수의 변수를 참조한 내부 함수를 외부로 전달했을 때,
+    해당 함수의 실행 컨텍스트가 종료된 후에도 LE가 GC되지 않는 현상
 */
 
 /// 클로저의 원리 ///
@@ -118,3 +118,39 @@ console.log(addPartial(6, 7, 8, 9, 10)); // 따라서 result 값이 유지됨
     짧은 시간 동일한 이벤트가 많이 발생했을 때 처음 또는 마지막에 발생한 이벤트에 대해 한 번만 처리
     FE 성능 최적화에 도움
 */
+let debounce = function (callback, wait) {
+    let timeoutId = null;
+    return function (event) {
+        let self = this;
+        console.log(`event 발생`);
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(callback.bind(self, event), wait);
+    }
+}
+
+let moveHandler = function (e) {
+    console.log(`event 처리`);
+}
+
+document.body.addEventListener('mousemove', debounce(moveHandler, 500));
+
+/*
+    커링 함수 (currying function)
+    한 번에 하나의 인자만 전달
+    중간 실행 결과는 그다음 인자를 받기 위해 대기만 할 뿐, 마지막 인자가 전달되기 전 원본 함수는 실행 안 됨.
+
+    각 단계에서 받은 인자들은 GC되지 않다가 마지막 호출 후 실행 컨텍스트 종료 시 한번에 회수
+    지연 실행(lazy execution)
+*/
+let curry = function (func) {
+    return function (a) {
+        return function (b) {
+            return func(a, b);
+        }
+    }
+}
+let curryArrowFunc = func => a => b => func(a, b);
+
+let getMaxWith10 = curry(math.max)(10);
+console.log(getMaxWith10(8)); // 10
+
